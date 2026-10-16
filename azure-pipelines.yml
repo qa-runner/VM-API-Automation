@@ -1,0 +1,64 @@
+# Azure DevOps Pipeline for VM API Automation.
+# Publishes JUnit (Tests tab), HTML + Allure as artifacts.
+trigger:
+  branches:
+    include: [main]
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: Install Node.js
+
+  - script: npm ci
+    displayName: npm ci
+
+  - script: npx playwright test --project=smoke
+    displayName: Run smoke
+    env:
+      BASE_URL: $(BASE_URL)
+      AUTH_IDENTIFIER: $(AUTH_IDENTIFIER)
+      AUTH_PASSWORD: $(AUTH_PASSWORD)
+      CI: '1'
+
+  - script: npx playwright test --project=regression
+    displayName: Run regression
+    condition: succeeded()
+    env:
+      BASE_URL: $(BASE_URL)
+      AUTH_IDENTIFIER: $(AUTH_IDENTIFIER)
+      AUTH_PASSWORD: $(AUTH_PASSWORD)
+      CI: '1'
+
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: 'test-results/junit.xml'
+      testRunTitle: 'VM API Tests'
+
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    inputs:
+      pathToPublish: 'playwright-report'
+      artifactName: 'playwright-html-report'
+
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    inputs:
+      pathToPublish: 'allure-results'
+      artifactName: 'allure-results'
+
+  # Allure HTML needs Java (preinstalled on ubuntu-latest agents).
+  - script: npx allure generate ./allure-results -o ./allure-report --clean
+    displayName: Generate Allure HTML report
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    inputs:
+      pathToPublish: 'allure-report'
+      artifactName: 'allure-html-report'

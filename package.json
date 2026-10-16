@@ -1,0 +1,30 @@
+{
+  "name": "vm-api-automation",
+  "version": "1.0.0",
+  "description": "Scalable Playwright JS API test automation suite for AyushManager (VM) APIs",
+  "type": "commonjs",
+  "scripts": {
+    "test": "playwright test",
+    "smoke": "playwright test --project=smoke",
+    "full": "playwright test --project=regression",
+    "contract": "playwright test --project=contract",
+    "one": "playwright test --project=regression --grep",
+    "report": "playwright show-report",
+    "allure": "allure generate ./allure-results -o ./allure-report --clean && allure open ./allure-report",
+    "clean": "node -e \"for (const d of ['test-results','playwright-report','allure-results','allure-report']) require('fs').rmSync(d,{recursive:true,force:true})\"",
+    "lint": "eslint src tests --ext .js",
+    "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"*.js\""
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@playwright/test": "^1.49.1",
+    "allure-playwright": "^2.15.1",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "allure-commandline": "^2.29.0",
+    "eslint": "^9.14.0",
+    "prettier": "^3.3.3"
+  }
+}
